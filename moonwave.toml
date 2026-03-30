@@ -3,7 +3,7 @@ sourceDir = ["docs"]
 
 [docusaurus]
 title = "Fluix"
-tagline = "Adaptive, demand-smoothed object pooling for Roblox."
+tagline = "Every object ready before demand arrives."
 url = "https://vel136.github.io"
 baseUrl = "/Fluix/"
 

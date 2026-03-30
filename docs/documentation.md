@@ -5,6 +5,8 @@ sidebar_label: "Overview"
 
 # Fluix
 
+*Every object ready before demand arrives.*
+
 Adaptive, demand-smoothed object pooling for Roblox.
 
 Fluix is a per-instance generic object pool. It tracks acquisition demand with an exponential moving average, pre-warms and gradually shrinks the pool to match real usage, and exposes hot/cold priority tiers, cross-pool borrowing, per-object TTL, and lifecycle signals — all with zero allocations on the acquire/release hot path.
