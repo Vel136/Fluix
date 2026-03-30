@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[768],{4410:s=>{s.exports=JSON.parse('{"sourceUrl":"https://github.com/Vel136/Fluix/blob/master","baseUrl":"/Fluix/","classOrder":[{"section":"API","classes":["Fluix"]}],"apiCategories":[]}')}}]);

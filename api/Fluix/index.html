@@ -1,0 +1,792 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="plugin-moonwave plugin-id-moonwave" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.7.0">
+<title data-rh="true">Fluix | Fluix</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://vel136.github.io/Fluix/api/Fluix"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docusaurus_tag" content="default"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docsearch:docusaurus_tag" content="default"><meta data-rh="true" property="og:title" content="Fluix | Fluix"><meta data-rh="true" name="description" content="Adaptive, demand-smoothed object pooling for Roblox.
+
+
+Fluix is a per-instance generic object pool. It tracks acquisition demand
+with an exponential moving average, pre-warms and gradually shrinks the pool
+to match real usage, and exposes hot/cold priority tiers, cross-pool
+borrowing, per-object TTL, and lifecycle signals — all with zero allocations
+on the acquire/release hot path.
+
+**Adaptive Sizing.** The Heartbeat pre-warms the cold pool toward
+`EMA × Headroom` and gradually shrinks it after `ShrinkGraceSeconds` of
+sustained surplus. The pool never falls below `MinSize` or rises above
+`MaxSize`.
+
+**Priority Tiers.** When `HotPoolSize &gt; 0`, a hot sub-pool is maintained.
+Acquire drains hot first, then cold. Release refills hot first, then cold.
+
+**Cross-Pool Borrowing.** On a factory miss, Fluix iterates `BorrowPeers`
+before allocating. The borrowed object is tracked as live in the borrowing
+pool and released normally.
+
+**Per-Object TTL.** Acquired objects are stamped with a timestamp. The
+Heartbeat force-reclaims any object held longer than `TTL` seconds.
+
+```lua
+local Fluix = require(ReplicatedStorage.Fluix)
+
+local BulletPool = Fluix.new({
+    Factory     = function() return Bullet.new() end,
+    Reset       = function(b) b:Reset() end,
+    MinSize     = 32,
+    HotPoolSize = 8,
+    TTL         = 10,
+})
+
+BulletPool:Seed(20)
+
+local bullet = BulletPool:Acquire(function(b)
+    b.Position = spawnPos
+    b.Velocity = direction * speed
+end)
+
+BulletPool:Release(bullet)
+```"><meta data-rh="true" property="og:description" content="Adaptive, demand-smoothed object pooling for Roblox.
+
+
+Fluix is a per-instance generic object pool. It tracks acquisition demand
+with an exponential moving average, pre-warms and gradually shrinks the pool
+to match real usage, and exposes hot/cold priority tiers, cross-pool
+borrowing, per-object TTL, and lifecycle signals — all with zero allocations
+on the acquire/release hot path.
+
+**Adaptive Sizing.** The Heartbeat pre-warms the cold pool toward
+`EMA × Headroom` and gradually shrinks it after `ShrinkGraceSeconds` of
+sustained surplus. The pool never falls below `MinSize` or rises above
+`MaxSize`.
+
+**Priority Tiers.** When `HotPoolSize &gt; 0`, a hot sub-pool is maintained.
+Acquire drains hot first, then cold. Release refills hot first, then cold.
+
+**Cross-Pool Borrowing.** On a factory miss, Fluix iterates `BorrowPeers`
+before allocating. The borrowed object is tracked as live in the borrowing
+pool and released normally.
+
+**Per-Object TTL.** Acquired objects are stamped with a timestamp. The
+Heartbeat force-reclaims any object held longer than `TTL` seconds.
+
+```lua
+local Fluix = require(ReplicatedStorage.Fluix)
+
+local BulletPool = Fluix.new({
+    Factory     = function() return Bullet.new() end,
+    Reset       = function(b) b:Reset() end,
+    MinSize     = 32,
+    HotPoolSize = 8,
+    TTL         = 10,
+})
+
+BulletPool:Seed(20)
+
+local bullet = BulletPool:Acquire(function(b)
+    b.Position = spawnPos
+    b.Velocity = direction * speed
+end)
+
+BulletPool:Release(bullet)
+```"><link data-rh="true" rel="canonical" href="https://vel136.github.io/Fluix/api/Fluix"><link data-rh="true" rel="alternate" href="https://vel136.github.io/Fluix/api/Fluix" hreflang="en"><link data-rh="true" rel="alternate" href="https://vel136.github.io/Fluix/api/Fluix" hreflang="x-default"><link rel="stylesheet" href="/Fluix/assets/css/styles.5cbed574.css">
+<script src="/Fluix/assets/js/runtime~main.124ce09f.js" defer="defer"></script>
+<script src="/Fluix/assets/js/main.b4035ba3.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return window.localStorage.getItem("theme")}catch(t){}}();null!==e?t(e):window.matchMedia("(prefers-color-scheme: dark)").matches?t("dark"):(window.matchMedia("(prefers-color-scheme: light)").matches,t("light"))}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/Fluix/"><b class="navbar__title text--truncate">Fluix</b></a><a class="navbar__item navbar__link" href="/Fluix/docs/intro">Docs</a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/Fluix/api/">API</a></div><div class="navbar__items navbar__items--right"><a href="https://github.com/Vel136/Fluix" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"><div class="navbar__search"><span aria-label="expand searchbar" role="button" class="search-icon" tabindex="0"></span><input id="search_input_react" type="search" placeholder="Loading..." aria-label="Search" class="navbar__search-input search-bar" disabled=""></div></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0 docPageContainer_wNNk"><div class="docPage_Dpn1"><div class="docSidebarContainer_o_re"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" role="button" aria-expanded="true" href="/Fluix/api/Fluix">API</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/Fluix/api/Fluix">​Fluix</a></li></ul></li></ul></nav></div></div><main class="docMainContainer_HJE1"><div class="container padding-vert--lg"><div class="row"><div class="col docItemCol_MU3C"><div class="docItemContainer_Wv98"><article><div class="member_J0w1 markdown"><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_oUs_"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><header><h1 class="docTitle_mZRt" style="text-decoration:none"><span style="display:inline-block">Fluix</span></h1><div class="luaClassTags_EipM"></div><div>
+<p>Adaptive, demand-smoothed object pooling for Roblox.</p>
+<p>
+  Fluix is a per-instance generic object pool. It tracks acquisition demand
+  with an exponential moving average, pre-warms and gradually shrinks the pool
+  to match real usage, and exposes hot/cold priority tiers, cross-pool
+  borrowing, per-object TTL, and lifecycle signals — all with zero allocations
+  on the acquire/release hot path.
+</p>
+<p>
+  <strong>Adaptive Sizing.</strong> The Heartbeat pre-warms the cold pool toward
+  <code>EMA × Headroom</code> and gradually shrinks it after <code>ShrinkGraceSeconds</code> of
+  sustained surplus. The pool never falls below <code>MinSize</code> or rises above
+  <code>MaxSize</code>.
+</p>
+<p>
+  <strong>Priority Tiers.</strong> When <code>HotPoolSize > 0</code>, a hot sub-pool is maintained.
+  Acquire drains hot first, then cold. Release refills hot first, then cold.
+</p>
+<p>
+  <strong>Cross-Pool Borrowing.</strong> On a factory miss, Fluix iterates <code>BorrowPeers</code>
+  before allocating. The borrowed object is tracked as live in the borrowing
+  pool and released normally.
+</p>
+<p>
+  <strong>Per-Object TTL.</strong> Acquired objects are stamped with a timestamp. The
+  Heartbeat force-reclaims any object held longer than <code>TTL</code> seconds.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> Fluix <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span>ReplicatedStorage<span class="token punctuation">.</span>Fluix<span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> BulletPool <span class="token operator">=</span> Fluix<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    Factory     <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">return</span> Bullet<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">end</span><span class="token punctuation">,</span>
+    Reset       <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span> b<span class="token punctuation">:</span><span class="token function">Reset</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">end</span><span class="token punctuation">,</span>
+    MinSize     <span class="token operator">=</span> <span class="token number">32</span><span class="token punctuation">,</span>
+    HotPoolSize <span class="token operator">=</span> <span class="token number">8</span><span class="token punctuation">,</span>
+    TTL         <span class="token operator">=</span> <span class="token number">10</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+
+BulletPool<span class="token punctuation">:</span><span class="token function">Seed</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span>
+
+<span class="token keyword">local</span> bullet <span class="token operator">=</span> BulletPool<span class="token punctuation">:</span><span class="token function">Acquire</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+    b<span class="token punctuation">.</span>Position <span class="token operator">=</span> spawnPos
+    b<span class="token punctuation">.</span>Velocity <span class="token operator">=</span> direction <span class="token operator">*</span> speed
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+
+BulletPool<span class="token punctuation">:</span><span class="token function">Release</span><span class="token punctuation">(</span>bullet<span class="token punctuation">)</span>
+</code></pre>
+</div></header><h2 class="anchor anchorWithStickyNavbar_LWe7" id="properties">Properties<a href="#properties" class="hash-link" aria-label="Direct link to Properties" title="Direct link to Properties">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Signals"><code style="text-decoration:none">Signals</code><a href="#Signals" class="hash-link" aria-label="Direct link to Signals" title="Direct link to Signals">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L107"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->.<!-- -->Signals<!-- -->:<!-- --> </code> <code class="blue_P4bS">PoolerSignals</code></div><div>
+<p>Lifecycle signals for this pool. All five are <a href="https://vel136.github.io/VeSignal/">Signal</a> connections.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Signal</th>
+      <th>Parameters</th>
+      <th>Fires when</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>OnAcquire</code></td>
+      <td><code>obj: T</code></td>
+      <td>Object left the pool</td>
+    </tr>
+    <tr>
+      <td><code>OnRelease</code></td>
+      <td><code>obj: T</code></td>
+      <td>Object returned to the pool</td>
+    </tr>
+    <tr>
+      <td><code>OnMiss</code></td>
+      <td><code>obj: T</code></td>
+      <td>Factory was called (pool was empty)</td>
+    </tr>
+    <tr>
+      <td><code>OnGrow</code></td>
+      <td><code>added: number, total: number</code></td>
+      <td>Pool expanded</td>
+    </tr>
+    <tr>
+      <td><code>OnShrink</code></td>
+      <td><code>removed: number, total: number</code></td>
+      <td>Pool contracted</td>
+    </tr>
+  </tbody>
+</table>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">.</span>Signals<span class="token punctuation">.</span>OnMiss<span class="token punctuation">:</span><span class="token function">Connect</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>obj<span class="token punctuation">)</span>
+    <span class="token function">warn</span><span class="token punctuation">(</span><span class="token string">"Pool miss — consider raising MinSize or Headroom"</span><span class="token punctuation">)</span>
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+
+Pool<span class="token punctuation">.</span>Signals<span class="token punctuation">.</span>OnGrow<span class="token punctuation">:</span><span class="token function">Connect</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>added<span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+    <span class="token function">print</span><span class="token punctuation">(</span><span class="token string">"Pool grew by"</span><span class="token punctuation">,</span> added<span class="token punctuation">,</span> <span class="token string">"— total:"</span><span class="token punctuation">,</span> total<span class="token punctuation">)</span>
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+</code></pre>
+</div><h2 class="anchor anchorWithStickyNavbar_LWe7" id="functions">Functions<a href="#functions" class="hash-link" aria-label="Direct link to Functions" title="Direct link to Functions">​</a></h2><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="new"><code style="text-decoration:none">new</code><a href="#new" class="hash-link" aria-label="Direct link to new" title="Direct link to new">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L79"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->.</code><code class="green_DgR4">new</code><code>(</code><div class="inset_uKQm"><div><code>config<!-- -->: </code><code class="blue_P4bS">PoolerConfig</code><span class="inlineDescription_G7Er">-- <span>
+<p>Pool configuration table.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">Pooler</code><span class="inlineDescription_G7Er">-- <span>
+<p>A new pool instance.</p>
+</span></span></div><div>
+<p>Creates a new, independent adaptive object pool.</p>
+<p>
+  <code>Factory</code> and <code>Reset</code> are required. All other config fields are optional
+  and fall back to sensible defaults.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> Pool <span class="token operator">=</span> Fluix<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    Factory  <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">return</span> Part<span class="token punctuation">.</span><span class="token function">new</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token keyword">end</span><span class="token punctuation">,</span>
+    Reset    <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>p<span class="token punctuation">)</span> p<span class="token punctuation">.</span>Parent <span class="token operator">=</span> <span class="token keyword">nil</span> <span class="token keyword">end</span><span class="token punctuation">,</span>
+    MinSize  <span class="token operator">=</span> <span class="token number">16</span><span class="token punctuation">,</span>
+    Headroom <span class="token operator">=</span> <span class="token number">3.0</span><span class="token punctuation">,</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Seed"><code style="text-decoration:none">Seed</code><a href="#Seed" class="hash-link" aria-label="Direct link to Seed" title="Direct link to Seed">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L124"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Seed</code><code>(</code><div class="inset_uKQm"><div><code>n<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Number of objects to pre-allocate.</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Pre-allocates <code>n</code> objects into the pool. Drains the hot sub-pool first,
+  then fills cold up to <code>MaxSize</code>. Safe to call before gameplay starts.
+</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Seed</span><span class="token punctuation">(</span><span class="token number">32</span><span class="token punctuation">)</span>  <span class="token comment">-- warm up 32 objects before the round begins</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Acquire"><code style="text-decoration:none">Acquire</code><a href="#Acquire" class="hash-link" aria-label="Direct link to Acquire" title="Direct link to Acquire">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L151"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Acquire</code><code>(</code><div class="inset_uKQm"><div><code>Apply<!-- -->: </code><code class="purple_ieR2">(</code><code class="green_DgR4">(</code><code>obj<!-- -->: </code><code class="blue_P4bS">T</code><code class="green_DgR4">)</code><code class="green_DgR4"> → </code><code class="green_DgR4">(</code><code class="green_DgR4">)</code><code class="purple_ieR2">)</code><code class="blue_P4bS">?</code><span class="inlineDescription_G7Er">-- <span>
+<p>Optional initialiser called before returning.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">T</code><span class="inlineDescription_G7Er">-- <span>
+<p>The acquired object.</p>
+</span></span></div><div>
+<p>
+  Acquires an object from the pool. Drains the hot sub-pool first, then cold.
+  On a miss, Fluix tries <code>BorrowPeers</code> in order before calling <code>Factory</code>.
+</p>
+<p>
+  An optional <code>Apply</code> function is called on the object before it is returned,
+  allowing inline initialisation without a separate step.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token comment">-- Without inline init</span>
+<span class="token keyword">local</span> bullet <span class="token operator">=</span> Pool<span class="token punctuation">:</span><span class="token function">Acquire</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+bullet<span class="token punctuation">.</span>Position <span class="token operator">=</span> spawnPos
+
+<span class="token comment">-- With inline init (preferred on hot paths)</span>
+<span class="token keyword">local</span> bullet <span class="token operator">=</span> Pool<span class="token punctuation">:</span><span class="token function">Acquire</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>b<span class="token punctuation">)</span>
+    b<span class="token punctuation">.</span>Position <span class="token operator">=</span> spawnPos
+    b<span class="token punctuation">.</span>Velocity <span class="token operator">=</span> direction <span class="token operator">*</span> speed
+<span class="token keyword">end</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Release"><code style="text-decoration:none">Release</code><a href="#Release" class="hash-link" aria-label="Direct link to Release" title="Direct link to Release">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L169"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Release</code><code>(</code><div class="inset_uKQm"><div><code>obj<!-- -->: </code><code class="blue_P4bS">T</code><span class="inlineDescription_G7Er">-- <span>
+<p>The object to return.</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Returns an object to the pool. <code>Reset</code> is called on the object. If the pool
+  is full, <code>OnOverflow</code> is called instead (or the object is dropped if
+  <code>OnOverflow</code> is not set).
+</p>
+<p>Double-release is detected and a warning is emitted.</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Release</span><span class="token punctuation">(</span>bullet<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="ReleaseAll"><code style="text-decoration:none">ReleaseAll</code><a href="#ReleaseAll" class="hash-link" aria-label="Direct link to ReleaseAll" title="Direct link to ReleaseAll">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L182"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">ReleaseAll</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Force-returns every currently live object at once. <code>Reset</code> is called on
+  each object. Useful for wave clears or round resets.
+</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">ReleaseAll</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="RegisterPeer"><code style="text-decoration:none">RegisterPeer</code><a href="#RegisterPeer" class="hash-link" aria-label="Direct link to RegisterPeer" title="Direct link to RegisterPeer">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L200"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">RegisterPeer</code><code>(</code><div class="inset_uKQm"><div><code>peer<!-- -->: </code><code class="blue_P4bS">Pooler</code><span class="inlineDescription_G7Er">-- <span>
+<p>The sibling pool to register.</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Adds a sibling pool to the borrow list. On a factory miss, Fluix will
+  attempt to pop an object from each registered peer's cold pool in order.
+</p>
+<pre class="language-lua"><code class="language-lua">BulletPool<span class="token punctuation">:</span><span class="token function">RegisterPeer</span><span class="token punctuation">(</span>FragPool<span class="token punctuation">)</span>
+FragPool<span class="token punctuation">:</span><span class="token function">RegisterPeer</span><span class="token punctuation">(</span>BulletPool<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="UnregisterPeer"><code style="text-decoration:none">UnregisterPeer</code><a href="#UnregisterPeer" class="hash-link" aria-label="Direct link to UnregisterPeer" title="Direct link to UnregisterPeer">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L214"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">UnregisterPeer</code><code>(</code><div class="inset_uKQm"><div><code>peer<!-- -->: </code><code class="blue_P4bS">Pooler</code><span class="inlineDescription_G7Er">-- <span>
+<p>The sibling pool to remove.</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>Removes a sibling pool from the borrow list.</p>
+<pre class="language-lua"><code class="language-lua">BulletPool<span class="token punctuation">:</span><span class="token function">UnregisterPeer</span><span class="token punctuation">(</span>FragPool<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Pause"><code style="text-decoration:none">Pause</code><a href="#Pause" class="hash-link" aria-label="Direct link to Pause" title="Direct link to Pause">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L230"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Pause</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Disconnects the Heartbeat without clearing any pool state. Pre-warming,
+  adaptive sizing, and TTL checks stop until <code>Resume</code> is called. Useful during
+  cutscenes or loading screens.
+</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Pause</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Resume"><code style="text-decoration:none">Resume</code><a href="#Resume" class="hash-link" aria-label="Direct link to Resume" title="Direct link to Resume">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L242"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Resume</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+<p>Reconnects the Heartbeat. Safe to call if already active.</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Resume</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Drain"><code style="text-decoration:none">Drain</code><a href="#Drain" class="hash-link" aria-label="Direct link to Drain" title="Direct link to Drain">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L256"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Drain</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Evicts all pooled objects from the hot and cold tiers, calling <code>OnOverflow</code>
+  (or discarding) each one. Does not touch live objects or reset the EMA.
+  The pool continues to function after draining.
+</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Drain</span><span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment">-- free memory during a loading screen</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Prewarm"><code style="text-decoration:none">Prewarm</code><a href="#Prewarm" class="hash-link" aria-label="Direct link to Prewarm" title="Direct link to Prewarm">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L271"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Prewarm</code><code>(</code><div class="inset_uKQm"><div><code>n<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>Number of objects to allocate immediately.</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Immediately allocates <code>n</code> objects into the cold pool, bypassing the
+  Heartbeat batch limit. Use this for one-shot forced pre-warming.
+</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Prewarm</span><span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Resize"><code style="text-decoration:none">Resize</code><a href="#Resize" class="hash-link" aria-label="Direct link to Resize" title="Direct link to Resize">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L287"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Resize</code><code>(</code><div class="inset_uKQm"><div><code>newMin<!-- -->: </code><code class="blue_P4bS">number</code><code>,</code><span class="inlineDescription_G7Er">-- <span>
+<p>New cold-pool floor.</p>
+</span></span></div><div><code>newMax<!-- -->: </code><code class="blue_P4bS">number</code><span class="inlineDescription_G7Er">-- <span>
+<p>New cold-pool ceiling.</p>
+</span></span></div></div><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Updates the <code>MinSize</code> and <code>MaxSize</code> limits at runtime. Takes effect on the
+  next Heartbeat tick.
+</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Resize</span><span class="token punctuation">(</span><span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">512</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="Destroy"><code style="text-decoration:none">Destroy</code><a href="#Destroy" class="hash-link" aria-label="Direct link to Destroy" title="Direct link to Destroy">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L301"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">Destroy</code><code>(</code><code>) → </code><code>(</code><code>)</code></div><div>
+<p>
+  Destroys the pool entirely. Disconnects the Heartbeat, clears all state,
+  and marks the pool as destroyed. Calling any method after <code>Destroy</code> is a
+  no-op or will error.
+</p>
+<pre class="language-lua"><code class="language-lua">Pool<span class="token punctuation">:</span><span class="token function">Destroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetStats"><code style="text-decoration:none">GetStats</code><a href="#GetStats" class="hash-link" aria-label="Direct link to GetStats" title="Direct link to GetStats">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L319"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetStats</code><code>(</code><code>) → </code><code class="blue_P4bS">PoolerStats</code><span class="inlineDescription_G7Er">-- <span>
+<p>Snapshot of current pool metrics.</p>
+</span></span></div><div>
+<p>
+  Returns a snapshot table of all pool metrics. Useful for dashboards and
+  debugging.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">local</span> stats <span class="token operator">=</span> Pool<span class="token punctuation">:</span><span class="token function">GetStats</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token function">print</span><span class="token punctuation">(</span>stats<span class="token punctuation">.</span>LiveCount<span class="token punctuation">,</span> stats<span class="token punctuation">.</span>HotSize<span class="token punctuation">,</span> stats<span class="token punctuation">.</span>PoolSize<span class="token punctuation">,</span> stats<span class="token punctuation">.</span>MissCount<span class="token punctuation">)</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetLiveCount"><code style="text-decoration:none">GetLiveCount</code><a href="#GetLiveCount" class="hash-link" aria-label="Direct link to GetLiveCount" title="Direct link to GetLiveCount">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L330"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetLiveCount</code><code>(</code><code>) → </code><code class="blue_P4bS">number</code></div><div>
+<p>
+  Returns the number of objects currently out of the pool (acquired but not
+  yet released). Zero-allocation.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetPoolSize"><code style="text-decoration:none">GetPoolSize</code><a href="#GetPoolSize" class="hash-link" aria-label="Direct link to GetPoolSize" title="Direct link to GetPoolSize">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L340"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetPoolSize</code><code>(</code><code>) → </code><code class="blue_P4bS">number</code></div><div>
+<p>Returns the number of objects currently in the cold pool. Zero-allocation.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetHotSize"><code style="text-decoration:none">GetHotSize</code><a href="#GetHotSize" class="hash-link" aria-label="Direct link to GetHotSize" title="Direct link to GetHotSize">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L350"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetHotSize</code><code>(</code><code>) → </code><code class="blue_P4bS">number</code></div><div>
+<p>Returns the number of objects currently in the hot sub-pool. Zero-allocation.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetTotalAvailable"><code style="text-decoration:none">GetTotalAvailable</code><a href="#GetTotalAvailable" class="hash-link" aria-label="Direct link to GetTotalAvailable" title="Direct link to GetTotalAvailable">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L367"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetTotalAvailable</code><code>(</code><code>) → </code><code class="blue_P4bS">number</code></div><div>
+<p>
+  Returns the total number of objects that can be acquired right now
+  (hot + cold). Zero-allocation.
+</p>
+<pre class="language-lua"><code class="language-lua"><span class="token keyword">if</span> Pool<span class="token punctuation">:</span><span class="token function">GetTotalAvailable</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">&#x3C;</span> <span class="token number">4</span> <span class="token keyword">then</span>
+    <span class="token function">warn</span><span class="token punctuation">(</span><span class="token string">"Pool running low"</span><span class="token punctuation">)</span>
+<span class="token keyword">end</span>
+</code></pre>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetDemandEMA"><code style="text-decoration:none">GetDemandEMA</code><a href="#GetDemandEMA" class="hash-link" aria-label="Direct link to GetDemandEMA" title="Direct link to GetDemandEMA">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L378"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetDemandEMA</code><code>(</code><code>) → </code><code class="blue_P4bS">number</code></div><div>
+<p>
+  Returns the smoothed acquisitions-per-window value tracked by the EMA.
+  Zero-allocation.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetTargetSize"><code style="text-decoration:none">GetTargetSize</code><a href="#GetTargetSize" class="hash-link" aria-label="Direct link to GetTargetSize" title="Direct link to GetTargetSize">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L389"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetTargetSize</code><code>(</code><code>) → </code><code class="blue_P4bS">number</code></div><div>
+<p>
+  Returns the current EMA-derived pre-warm target for the cold pool.
+  Zero-allocation.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="GetMissCount"><code style="text-decoration:none">GetMissCount</code><a href="#GetMissCount" class="hash-link" aria-label="Direct link to GetMissCount" title="Direct link to GetMissCount">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L400"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">GetMissCount</code><code>(</code><code>) → </code><code class="blue_P4bS">number</code></div><div>
+<p>
+  Returns the total number of factory misses since the pool was created.
+  Zero-allocation.
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="IsOwned"><code style="text-decoration:none">IsOwned</code><a href="#IsOwned" class="hash-link" aria-label="Direct link to IsOwned" title="Direct link to IsOwned">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L412"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">IsOwned</code><code>(</code><div class="inset_uKQm"><div><code>obj<!-- -->: </code><code class="blue_P4bS">T</code><span class="inlineDescription_G7Er">-- <span>
+<p>The object to check.</p>
+</span></span></div></div><code>) → </code><code class="blue_P4bS">boolean</code></div><div>
+<p>
+  Returns <code>true</code> if <code>obj</code> is currently live in this pool (acquired but not
+  yet released).
+</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="IsActive"><code style="text-decoration:none">IsActive</code><a href="#IsActive" class="hash-link" aria-label="Direct link to IsActive" title="Direct link to IsActive">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L422"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">IsActive</code><code>(</code><code>) → </code><code class="blue_P4bS">boolean</code></div><div>
+<p>Returns <code>true</code> if the Heartbeat connection is currently live.</p>
+</div><div class="divider_rE5g"></div><h3 class="anchor anchorWithStickyNavbar_LWe7" id="IsDestroyed"><code style="text-decoration:none">IsDestroyed</code><a href="#IsDestroyed" class="hash-link" aria-label="Direct link to IsDestroyed" title="Direct link to IsDestroyed">​</a></h3><div class="repositoryDetailsContainer_BPdw"><a class="sourceButton_sEho" href="https://github.com/Vel136/Fluix/blob/master/docs/Fluix.lua#L432"><div class="sourceButtonText_Vh0m">&lt;/&gt;</div></a></div><div class="memberString_GwaU"><code>Fluix<!-- -->:</code><code class="green_DgR4">IsDestroyed</code><code>(</code><code>) → </code><code class="blue_P4bS">boolean</code></div><div>
+<p>Returns <code>true</code> if <code>Destroy</code> has been called on this pool.</p>
+</div></div></article></div><details><summary>Show raw api</summary><pre style="max-width:100%;white-space:pre-wrap">{
+    &quot;functions&quot;: [
+        {
+            &quot;name&quot;: &quot;new&quot;,
+            &quot;desc&quot;: &quot;Creates a new, independent adaptive object pool.\n\n`Factory` and `Reset` are required. All other config fields are optional\nand fall back to sensible defaults.\n\n```lua\nlocal Pool = Fluix.new({\n    Factory  = function() return Part.new() end,\n    Reset    = function(p) p.Parent = nil end,\n    MinSize  = 16,\n    Headroom = 3.0,\n})\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;config&quot;,
+                    &quot;desc&quot;: &quot;Pool configuration table.&quot;,
+                    &quot;lua_type&quot;: &quot;PoolerConfig&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;A new pool instance.&quot;,
+                    &quot;lua_type&quot;: &quot;Pooler&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;static&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 79,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Seed&quot;,
+            &quot;desc&quot;: &quot;Pre-allocates `n` objects into the pool. Drains the hot sub-pool first,\nthen fills cold up to `MaxSize`. Safe to call before gameplay starts.\n\n```lua\nPool:Seed(32)  -- warm up 32 objects before the round begins\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;n&quot;,
+                    &quot;desc&quot;: &quot;Number of objects to pre-allocate.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 124,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Acquire&quot;,
+            &quot;desc&quot;: &quot;Acquires an object from the pool. Drains the hot sub-pool first, then cold.\nOn a miss, Fluix tries `BorrowPeers` in order before calling `Factory`.\n\nAn optional `Apply` function is called on the object before it is returned,\nallowing inline initialisation without a separate step.\n\n```lua\n-- Without inline init\nlocal bullet = Pool:Acquire()\nbullet.Position = spawnPos\n\n-- With inline init (preferred on hot paths)\nlocal bullet = Pool:Acquire(function(b)\n    b.Position = spawnPos\n    b.Velocity = direction * speed\nend)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;Apply&quot;,
+                    &quot;desc&quot;: &quot;Optional initialiser called before returning.&quot;,
+                    &quot;lua_type&quot;: &quot;((obj: T) -&gt; ())?&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;The acquired object.&quot;,
+                    &quot;lua_type&quot;: &quot;T&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 151,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Release&quot;,
+            &quot;desc&quot;: &quot;Returns an object to the pool. `Reset` is called on the object. If the pool\nis full, `OnOverflow` is called instead (or the object is dropped if\n`OnOverflow` is not set).\n\nDouble-release is detected and a warning is emitted.\n\n```lua\nPool:Release(bullet)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;obj&quot;,
+                    &quot;desc&quot;: &quot;The object to return.&quot;,
+                    &quot;lua_type&quot;: &quot;T&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 169,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;ReleaseAll&quot;,
+            &quot;desc&quot;: &quot;Force-returns every currently live object at once. `Reset` is called on\neach object. Useful for wave clears or round resets.\n\n```lua\nPool:ReleaseAll()\n```&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 182,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;RegisterPeer&quot;,
+            &quot;desc&quot;: &quot;Adds a sibling pool to the borrow list. On a factory miss, Fluix will\nattempt to pop an object from each registered peer&#x27;s cold pool in order.\n\n```lua\nBulletPool:RegisterPeer(FragPool)\nFragPool:RegisterPeer(BulletPool)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;peer&quot;,
+                    &quot;desc&quot;: &quot;The sibling pool to register.&quot;,
+                    &quot;lua_type&quot;: &quot;Pooler&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 200,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;UnregisterPeer&quot;,
+            &quot;desc&quot;: &quot;Removes a sibling pool from the borrow list.\n\n```lua\nBulletPool:UnregisterPeer(FragPool)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;peer&quot;,
+                    &quot;desc&quot;: &quot;The sibling pool to remove.&quot;,
+                    &quot;lua_type&quot;: &quot;Pooler&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 214,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Pause&quot;,
+            &quot;desc&quot;: &quot;Disconnects the Heartbeat without clearing any pool state. Pre-warming,\nadaptive sizing, and TTL checks stop until `Resume` is called. Useful during\ncutscenes or loading screens.\n\n```lua\nPool:Pause()\n```&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 230,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Resume&quot;,
+            &quot;desc&quot;: &quot;Reconnects the Heartbeat. Safe to call if already active.\n\n```lua\nPool:Resume()\n```&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 242,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Drain&quot;,
+            &quot;desc&quot;: &quot;Evicts all pooled objects from the hot and cold tiers, calling `OnOverflow`\n(or discarding) each one. Does not touch live objects or reset the EMA.\nThe pool continues to function after draining.\n\n```lua\nPool:Drain()  -- free memory during a loading screen\n```&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 256,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Prewarm&quot;,
+            &quot;desc&quot;: &quot;Immediately allocates `n` objects into the cold pool, bypassing the\nHeartbeat batch limit. Use this for one-shot forced pre-warming.\n\n```lua\nPool:Prewarm(16)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;n&quot;,
+                    &quot;desc&quot;: &quot;Number of objects to allocate immediately.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 271,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Resize&quot;,
+            &quot;desc&quot;: &quot;Updates the `MinSize` and `MaxSize` limits at runtime. Takes effect on the\nnext Heartbeat tick.\n\n```lua\nPool:Resize(64, 512)\n```&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;newMin&quot;,
+                    &quot;desc&quot;: &quot;New cold-pool floor.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                },
+                {
+                    &quot;name&quot;: &quot;newMax&quot;,
+                    &quot;desc&quot;: &quot;New cold-pool ceiling.&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 287,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;Destroy&quot;,
+            &quot;desc&quot;: &quot;Destroys the pool entirely. Disconnects the Heartbeat, clears all state,\nand marks the pool as destroyed. Calling any method after `Destroy` is a\nno-op or will error.\n\n```lua\nPool:Destroy()\n```&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 301,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetStats&quot;,
+            &quot;desc&quot;: &quot;Returns a snapshot table of all pool metrics. Useful for dashboards and\ndebugging.\n\n```lua\nlocal stats = Pool:GetStats()\nprint(stats.LiveCount, stats.HotSize, stats.PoolSize, stats.MissCount)\n```&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;Snapshot of current pool metrics.&quot;,
+                    &quot;lua_type&quot;: &quot;PoolerStats&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 319,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetLiveCount&quot;,
+            &quot;desc&quot;: &quot;Returns the number of objects currently out of the pool (acquired but not\nyet released). Zero-allocation.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 330,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetPoolSize&quot;,
+            &quot;desc&quot;: &quot;Returns the number of objects currently in the cold pool. Zero-allocation.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 340,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetHotSize&quot;,
+            &quot;desc&quot;: &quot;Returns the number of objects currently in the hot sub-pool. Zero-allocation.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 350,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetTotalAvailable&quot;,
+            &quot;desc&quot;: &quot;Returns the total number of objects that can be acquired right now\n(hot + cold). Zero-allocation.\n\n```lua\nif Pool:GetTotalAvailable() &lt; 4 then\n    warn(\&quot;Pool running low\&quot;)\nend\n```&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 367,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetDemandEMA&quot;,
+            &quot;desc&quot;: &quot;Returns the smoothed acquisitions-per-window value tracked by the EMA.\nZero-allocation.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 378,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetTargetSize&quot;,
+            &quot;desc&quot;: &quot;Returns the current EMA-derived pre-warm target for the cold pool.\nZero-allocation.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 389,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;GetMissCount&quot;,
+            &quot;desc&quot;: &quot;Returns the total number of factory misses since the pool was created.\nZero-allocation.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;number&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 400,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;IsOwned&quot;,
+            &quot;desc&quot;: &quot;Returns `true` if `obj` is currently live in this pool (acquired but not\nyet released).&quot;,
+            &quot;params&quot;: [
+                {
+                    &quot;name&quot;: &quot;obj&quot;,
+                    &quot;desc&quot;: &quot;The object to check.&quot;,
+                    &quot;lua_type&quot;: &quot;T&quot;
+                }
+            ],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;boolean&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 412,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;IsActive&quot;,
+            &quot;desc&quot;: &quot;Returns `true` if the Heartbeat connection is currently live.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;boolean&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 422,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        },
+        {
+            &quot;name&quot;: &quot;IsDestroyed&quot;,
+            &quot;desc&quot;: &quot;Returns `true` if `Destroy` has been called on this pool.&quot;,
+            &quot;params&quot;: [],
+            &quot;returns&quot;: [
+                {
+                    &quot;desc&quot;: &quot;&quot;,
+                    &quot;lua_type&quot;: &quot;boolean&quot;
+                }
+            ],
+            &quot;function_type&quot;: &quot;method&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 432,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        }
+    ],
+    &quot;properties&quot;: [
+        {
+            &quot;name&quot;: &quot;Signals&quot;,
+            &quot;desc&quot;: &quot;Lifecycle signals for this pool. All five are [Signal] connections.\n\n| Signal | Parameters | Fires when |\n|--------|-----------|------------|\n| `OnAcquire` | `obj: T` | Object left the pool |\n| `OnRelease` | `obj: T` | Object returned to the pool |\n| `OnMiss` | `obj: T` | Factory was called (pool was empty) |\n| `OnGrow` | `added: number, total: number` | Pool expanded |\n| `OnShrink` | `removed: number, total: number` | Pool contracted |\n\n```lua\nPool.Signals.OnMiss:Connect(function(obj)\n    warn(\&quot;Pool miss — consider raising MinSize or Headroom\&quot;)\nend)\n\nPool.Signals.OnGrow:Connect(function(added, total)\n    print(\&quot;Pool grew by\&quot;, added, \&quot;— total:\&quot;, total)\nend)\n```&quot;,
+            &quot;lua_type&quot;: &quot;PoolerSignals&quot;,
+            &quot;source&quot;: {
+                &quot;line&quot;: 107,
+                &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+            }
+        }
+    ],
+    &quot;types&quot;: [],
+    &quot;name&quot;: &quot;Fluix&quot;,
+    &quot;desc&quot;: &quot;Adaptive, demand-smoothed object pooling for Roblox.\n\n\nFluix is a per-instance generic object pool. It tracks acquisition demand\nwith an exponential moving average, pre-warms and gradually shrinks the pool\nto match real usage, and exposes hot/cold priority tiers, cross-pool\nborrowing, per-object TTL, and lifecycle signals — all with zero allocations\non the acquire/release hot path.\n\n**Adaptive Sizing.** The Heartbeat pre-warms the cold pool toward\n`EMA × Headroom` and gradually shrinks it after `ShrinkGraceSeconds` of\nsustained surplus. The pool never falls below `MinSize` or rises above\n`MaxSize`.\n\n**Priority Tiers.** When `HotPoolSize &gt; 0`, a hot sub-pool is maintained.\nAcquire drains hot first, then cold. Release refills hot first, then cold.\n\n**Cross-Pool Borrowing.** On a factory miss, Fluix iterates `BorrowPeers`\nbefore allocating. The borrowed object is tracked as live in the borrowing\npool and released normally.\n\n**Per-Object TTL.** Acquired objects are stamped with a timestamp. The\nHeartbeat force-reclaims any object held longer than `TTL` seconds.\n\n```lua\nlocal Fluix = require(ReplicatedStorage.Fluix)\n\nlocal BulletPool = Fluix.new({\n    Factory     = function() return Bullet.new() end,\n    Reset       = function(b) b:Reset() end,\n    MinSize     = 32,\n    HotPoolSize = 8,\n    TTL         = 10,\n})\n\nBulletPool:Seed(20)\n\nlocal bullet = BulletPool:Acquire(function(b)\n    b.Position = spawnPos\n    b.Velocity = direction * speed\nend)\n\nBulletPool:Release(bullet)\n```&quot;,
+    &quot;external_types&quot;: [
+        {
+            &quot;name&quot;: &quot;Signal&quot;,
+            &quot;url&quot;: &quot;https://vel136.github.io/VeSignal/&quot;
+        }
+    ],
+    &quot;source&quot;: {
+        &quot;line&quot;: 54,
+        &quot;path&quot;: &quot;docs/Fluix.lua&quot;
+    }
+}</pre></details></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#properties" class="table-of-contents__link toc-highlight">Properties</a><ul><li><a href="#Signals" class="table-of-contents__link toc-highlight">Signals</a></li></ul></li><li><a href="#functions" class="table-of-contents__link toc-highlight">Functions</a><ul><li><a href="#Acquire" class="table-of-contents__link toc-highlight">:Acquire</a></li><li><a href="#Destroy" class="table-of-contents__link toc-highlight">:Destroy</a></li><li><a href="#Drain" class="table-of-contents__link toc-highlight">:Drain</a></li><li><a href="#GetDemandEMA" class="table-of-contents__link toc-highlight">:GetDemandEMA</a></li><li><a href="#GetHotSize" class="table-of-contents__link toc-highlight">:GetHotSize</a></li><li><a href="#GetLiveCount" class="table-of-contents__link toc-highlight">:GetLiveCount</a></li><li><a href="#GetMissCount" class="table-of-contents__link toc-highlight">:GetMissCount</a></li><li><a href="#GetPoolSize" class="table-of-contents__link toc-highlight">:GetPoolSize</a></li><li><a href="#GetStats" class="table-of-contents__link toc-highlight">:GetStats</a></li><li><a href="#GetTargetSize" class="table-of-contents__link toc-highlight">:GetTargetSize</a></li><li><a href="#GetTotalAvailable" class="table-of-contents__link toc-highlight">:GetTotalAvailable</a></li><li><a href="#IsActive" class="table-of-contents__link toc-highlight">:IsActive</a></li><li><a href="#IsDestroyed" class="table-of-contents__link toc-highlight">:IsDestroyed</a></li><li><a href="#IsOwned" class="table-of-contents__link toc-highlight">:IsOwned</a></li><li><a href="#Pause" class="table-of-contents__link toc-highlight">:Pause</a></li><li><a href="#Prewarm" class="table-of-contents__link toc-highlight">:Prewarm</a></li><li><a href="#RegisterPeer" class="table-of-contents__link toc-highlight">:RegisterPeer</a></li><li><a href="#Release" class="table-of-contents__link toc-highlight">:Release</a></li><li><a href="#ReleaseAll" class="table-of-contents__link toc-highlight">:ReleaseAll</a></li><li><a href="#Resize" class="table-of-contents__link toc-highlight">:Resize</a></li><li><a href="#Resume" class="table-of-contents__link toc-highlight">:Resume</a></li><li><a href="#Seed" class="table-of-contents__link toc-highlight">:Seed</a></li><li><a href="#UnregisterPeer" class="table-of-contents__link toc-highlight">:UnregisterPeer</a></li><li><a href="#new" class="table-of-contents__link toc-highlight">.new</a></li></ul></li></ul></div></div></div></div></main></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://discord.gg/XMYMRKcd3g" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord Server<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://discord.com/users/897026279243669504" target="_blank" rel="noopener noreferrer" class="footer__link-item">Discord (Direct)<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div><div class="col footer__col"><div class="footer__title">Social</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://www.instagram.com/vedevelopment/" target="_blank" rel="noopener noreferrer" class="footer__link-item">Instagram<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://x.com/vedevelopment_" target="_blank" rel="noopener noreferrer" class="footer__link-item">X (Twitter)<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://www.tiktok.com/@vedevelopment" target="_blank" rel="noopener noreferrer" class="footer__link-item">TikTok<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2026 VeDevelopment</div></div></div></footer></div>
+</body>
+</html>
