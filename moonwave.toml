@@ -1,0 +1,49 @@
+[moonwave]
+sourceDir = ["docs"]
+
+[docusaurus]
+title = "Fluix"
+tagline = "Adaptive, demand-smoothed object pooling for Roblox."
+url = "https://vel136.github.io"
+baseUrl = "/Fluix/"
+
+[home]
+enabled = true
+includeReadme = true
+
+[[classOrder]]
+section = "API"
+classes = ["Fluix"]
+
+[navbar]
+title = "Fluix"
+
+[footer]
+style = "dark"
+copyright = "Copyright © 2026 VeDevelopment"
+
+[[footer.links]]
+title = "Community"
+
+[[footer.links.items]]
+label = "Discord Server"
+href = "https://discord.gg/XMYMRKcd3g"
+
+[[footer.links.items]]
+label = "Discord (Direct)"
+href = "https://discord.com/users/897026279243669504"
+
+[[footer.links]]
+title = "Social"
+
+[[footer.links.items]]
+label = "Instagram"
+href = "https://www.instagram.com/vedevelopment/"
+
+[[footer.links.items]]
+label = "X (Twitter)"
+href = "https://x.com/vedevelopment_"
+
+[[footer.links.items]]
+label = "TikTok"
+href = "https://www.tiktok.com/@vedevelopment"
